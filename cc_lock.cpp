@@ -8,7 +8,8 @@
 /*
  * 1. 先判断数据项上的锁与自己加的锁是否冲突
  * 2. a. 若不冲突，对数据项上的mutex加锁，并设置数据上已有锁信息（owner）为自己加的锁
- *    b. 若冲突，将自己要加的锁加到该数据的等待队列waitlist中，并对数据mutex加锁，然后被阻塞，等待数据上已有的锁被释放
+ *    b. 若冲突，将自己要加的锁加到该数据的等待队列waitlist中，并对数据mutex加锁，然后被阻塞，等待数据上已有的锁被释放。
+ *       阻塞结束后，设置该数据上已有锁信息(owner)为自己加的锁，将自己从waitlist中移除。
  */
 RC cc_lock::lock_get(lock_t type, thread::id tid, Data &data){
 
@@ -17,7 +18,7 @@ RC cc_lock::lock_get(lock_t type, thread::id tid, Data &data){
 /*
  * 1. 判断数据项上有无阻塞的锁请求（检查waitlist）
  * 2. a. 若没有，先释放mutex，再将数据上的owner置为无锁
- *    b. 若有阻塞锁请求，从waitlist中pop出头部的LockEntry，将owner置为该LockEntry，然后释放mutex
+ *    b. 释放mutex上的锁
  */
 RC cc_lock::lock_release(lock_t type, thread::id tid, Data &data){
 
